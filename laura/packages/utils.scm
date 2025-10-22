@@ -71,12 +71,17 @@
   #:use-module (gnu packages ncurses)
   #:use-module (gnu packages ruby)
   #:use-module (gnu packages electronics)
+  #:use-module (gnu packages boost)
+  #:use-module (gnu packages aidc)
+  #:use-module (gnu packages crypto)
+  #:use-module (gnu packages tor)
   #:use-module (gnu system uuid)
   #:use-module (guix build utils)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system go)
   #:use-module (guix build-system python)
   #:use-module (guix build-system meson)
+  #:use-module (guix build-system qt)
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (srfi srfi-1)
@@ -2297,3 +2302,25 @@ Version 1 of VDR was able to record and play plain old SDTV. The new version 2 c
     (synopsis "Fil-C: completely compatible memory safety for C and C++ ")
     (description "Fil-C is a fanatically compatible memory-safe implementation of C and C++. Lots of software compiles and runs with Fil-C with zero or minimal changes. All memory safety errors are caught as Fil-C panics. Fil-C achieves this using a combination of concurrent garbage collection and invisible capabilities (each pointer in memory has a corresponding capability, not visible to the C address space). Every fundamental C operation (as seen in LLVM IR) is checked against the capability. Fil-C has no unsafe escape hatch of any kind.")
     (license license:asl2.0)))
+
+(define-public feather
+  (package
+    (name "feather")
+    (version "2.8.1")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/feather-wallet/feather")
+              (recursive? #t)
+              (commit "2.8.1")))
+        (file-name (git-file-name name version))
+        (sha256 (base32 "18r67kff0kl1gqfri0qja7qq5j7nzwclxignczvasv982xj5340d"))))
+    (build-system qt-build-system)
+    (inputs (list openssl unbound boost qrencode protobuf zxing-cpp readline qtbase qtsvg qtwebsockets qtmultimedia qtwayland wayland libsodium tor))
+    (native-inputs (list python-3))
+    (arguments (list #:build-type "Release" #:tests? #f))
+    (home-page "https://featherwallet.org/")
+    (synopsis "A free and open-source Monero desktop wallet")
+    (description "Feather is a free Monero desktop wallet for Linux, Tails, macOS and Windows. It is written in C++ with the Qt framework.")
+    (license license:bsd-3)))

@@ -102,6 +102,7 @@
         u8_r2_plugin
         acarsdec
         vdr
+        feather
         otptool
         ctrtool
         makerom
