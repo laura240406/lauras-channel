@@ -10,6 +10,7 @@
   #:use-module (guix build-system copy)
   #:use-module (guix build-system zig)
   #:use-module (guix build-system pyproject)
+  #:use-module (guix build-system ant)
   #:use-module (gnu packages)
   #:use-module (past-crates packages crates-io)
   #:use-module (gnu packages protobuf)
@@ -2324,3 +2325,28 @@ Version 1 of VDR was able to record and play plain old SDTV. The new version 2 c
     (synopsis "A free and open-source Monero desktop wallet")
     (description "Feather is a free Monero desktop wallet for Linux, Tails, macOS and Windows. It is written in C++ with the Qt framework.")
     (license license:bsd-3)))
+
+(define-public i2p
+  (package
+    (name "i2p")
+    (version "2.7.0")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/i2p/i2p.i2p")
+              (recursive? #t)
+              (commit "i2p-2.7.0")))
+        (file-name (git-file-name name version))
+        (sha256 (base32 "1s49kxlcjwhcg41jpvzry3i52zkljk9qwhlr17yzqkg67bm643c3"))))
+    (native-inputs (list gnu-gettext))
+    (arguments (list #:tests? #f #:build-target "installer-linux" #:phases
+      #~(modify-phases %standard-phases
+          (replace 'install (lambda _
+            (mkdir-p (string-append #$output "/share/i2p"))
+            (copy-file "i2pinstall_2.7.0-0_linux-only.jar" (string-append #$output "/share/i2p/installer.jar")))))))
+    (build-system ant-build-system)
+    (home-page "https://geti2p.net/en/")
+    (synopsis "Reference Java implementation of I2P")
+    (description "I2P is an anonymizing network, offering a simple layer that identity-sensitive applications can use to securely communicate. All data is wrapped with several layers of encryption, and the network is both distributed and dynamic, with no trusted parties.")
+    (license (license:non-copyleft "file://licenses"))))
