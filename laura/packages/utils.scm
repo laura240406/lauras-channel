@@ -76,6 +76,7 @@
   #:use-module (gnu packages aidc)
   #:use-module (gnu packages crypto)
   #:use-module (gnu packages tor)
+  #:use-module (gnu packages dbm)
   #:use-module (gnu system uuid)
   #:use-module (guix build utils)
   #:use-module (guix build-system cmake)
@@ -2338,15 +2339,49 @@ Version 1 of VDR was able to record and play plain old SDTV. The new version 2 c
               (recursive? #t)
               (commit "i2p-2.7.0")))
         (file-name (git-file-name name version))
+        (modules '((guix build utils)))
+        (snippet #~(begin
+          (substitute* "build.xml" (("preppkg-linux, preppkg-freebsd, preppkg-osx, preppkg-windows, jbigi") "preppkg-linux, jbigi"))
+          (substitute* "apps/routerconsole/java/build.xml" (("jstlel.jar ") ""))))
         (sha256 (base32 "1s49kxlcjwhcg41jpvzry3i52zkljk9qwhlr17yzqkg67bm643c3"))))
     (native-inputs (list gnu-gettext))
-    (arguments (list #:tests? #f #:build-target "installer-linux" #:phases
+    (arguments (list #:tests? #f #:build-target "tarball" #:phases
       #~(modify-phases %standard-phases
           (replace 'install (lambda _
-            (mkdir-p (string-append #$output "/share/i2p"))
-            (copy-file "i2pinstall_2.7.0-0_linux-only.jar" (string-append #$output "/share/i2p/installer.jar")))))))
+            (mkdir-p (string-append #$output "/share"))
+            (chdir (string-append #$output "/share"))
+            (system "tar vfx /tmp/guix-build-i2p-2.7.0.drv-0/source/i2p.tar.bz2")))
+          (add-after 'strip-jar-timestamps 'remove-remnants (lambda _
+            (chdir #$output)
+            (rename-file "share/i2p" "i2p")
+            (delete-file-recursively "share")
+            (mkdir "share")
+            (rename-file "i2p" "share/i2p")
+            (chdir "share/i2p")
+            (chmod "postinstall.sh" 511)
+            (system "./postinstall.sh"))))))
     (build-system ant-build-system)
     (home-page "https://geti2p.net/en/")
     (synopsis "Reference Java implementation of I2P")
     (description "I2P is an anonymizing network, offering a simple layer that identity-sensitive applications can use to securely communicate. All data is wrapped with several layers of encryption, and the network is both distributed and dynamic, with no trusted parties.")
     (license (license:non-copyleft "file://licenses"))))
+
+(define-public modem-manager-gui
+  (package
+    (name "modem-manager-gui")
+    (version "0.0.20")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/dmikushin/modem-manager-gui")
+              (commit "3a7f24e")))
+        (file-name (git-file-name name version))
+        (sha256 (base32 "0bshral7p3vk9mj4rd9s1wqgndbprk8praj5yrgja4fmwr392nw6"))))
+    (build-system meson-build-system)
+    (native-inputs (list pkg-config po4a gettext-minimal itstool python-wrapper))
+    (inputs (list glib gtk+ gdbm))
+    (home-page "https://github.com/dmikushin/modem-manager-gui")
+    (synopsis "Modem Manager GUI")
+    (description "Modem Manager GUI is a simple GTK based graphical interface compatible with Modem manager, Wader and oFono system services able to control EDGE/3G/4G broadband modem specific functions. You can check balance of your SIM card, send or receive SMS messages, control mobile traffic consumption and more using Modem Manager GUI.")
+    (license license:gpl3+)))
