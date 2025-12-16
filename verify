@@ -105,6 +105,7 @@
         feather
         i2p
         modem-manager-gui
+        electrum-ltc
         otptool
         ctrtool
         makerom

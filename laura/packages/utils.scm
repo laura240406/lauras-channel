@@ -77,6 +77,8 @@
   #:use-module (gnu packages crypto)
   #:use-module (gnu packages tor)
   #:use-module (gnu packages dbm)
+  #:use-module (gnu packages finance)
+  #:use-module (gnu packages libusb)
   #:use-module (gnu system uuid)
   #:use-module (guix build utils)
   #:use-module (guix build-system cmake)
@@ -2385,3 +2387,71 @@ Version 1 of VDR was able to record and play plain old SDTV. The new version 2 c
     (synopsis "Modem Manager GUI")
     (description "Modem Manager GUI is a simple GTK based graphical interface compatible with Modem manager, Wader and oFono system services able to control EDGE/3G/4G broadband modem specific functions. You can check balance of your SIM card, send or receive SMS messages, control mobile traffic consumption and more using Modem Manager GUI.")
     (license license:gpl3+)))
+
+(define-public electrum-ltc
+  (package
+    (inherit electrum)
+    (name "electrum-ltc")
+    (version "4.2.2.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri "https://electrum-ltc.org/download/Electrum-LTC-4.2.2.1.tar.gz")
+       (sha256
+        (base32 "1m1k1xnfc2b41qz7ipy04x66zwqg0vwq2qmf1i4kw75yyxrbqpgc"))
+       (modules '((guix build utils)))
+       (snippet '(begin
+                   ;; Delete the bundled dependencies.
+                   (delete-file-recursively "packages")))))
+    (arguments
+     (list
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'sanity-check)
+          (add-after 'unpack 'relax-deps
+            (lambda _
+              (substitute* "contrib/requirements/requirements.txt"
+                ;; These packages have tight version requirements because
+                ;; the developer does not want to introduce Hatchling in
+                ;; the build environment.  They do work at runtime.
+                (("attrs.*")
+                 "attrs")
+                (("dnspython.*")
+                 "dnspython")
+                (("aiorpcx.*")
+                 "aiorpcx\n"))
+              (substitute* "electrum_ltc/electrum-ltc"
+                (("    check_imports.*")
+                 "    pass"))))
+          (add-after 'install 'wrap
+            (lambda _
+              (wrap-program (string-append #$output "/bin/electrum-ltc")
+                `(LD_LIBRARY_PATH suffix
+                                  ,(list (string-append #$libsecp256k1-bitcoin-cash
+                                                        "/lib")))))))))
+    (inputs (list python-bitstring
+                  python-aiorpcx
+                  libsecp256k1-bitcoin-cash
+                  python-scrypt
+                  electrum-aionostr
+                  python-aiohttp
+                  python-aiohttp-socks
+                  python-aiorpcx
+                  python-attrs
+                  python-certifi
+                  python-cryptography
+                  python-dnspython
+                  python-electrum-ecc
+                  python-hidapi
+                  python-jsonpatch
+                  python-protobuf
+                  python-pyaes
+                  python-pyqt
+                  python-qdarkstyle
+                  python-qrcode
+                  zbar))
+    (home-page "https://electrum-ltc.org/")
+    (synopsis "Electrum-LTC Litecoin wallet")
+    (description "Electrum-LTC - Lightweight Litecoin client")
+    (license license:expat)))
