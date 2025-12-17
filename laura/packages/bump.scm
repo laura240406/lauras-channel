@@ -242,7 +242,7 @@ automatic, safe and reliable.  It is used by tools such as GNOME Software. Now w
                          procps
                          python
                          xorg-server-for-tests))
-    (inputs (list boost
+    (inputs (list boost-1.83
                   cgal
                   double-conversion
                   eigen
