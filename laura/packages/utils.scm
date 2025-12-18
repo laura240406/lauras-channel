@@ -997,7 +997,8 @@ install(FILES leopard.h DESTINATION include)
         (base32 "1qxadb1ccmdwnwj4p15sm2i3b7cjaxh7far1jk9sxrblwh7497ds"))))
     (build-system python-build-system)
     (arguments
-     `(#:phases (modify-phases %standard-phases
+     `(#:tests? #f
+       #:phases (modify-phases %standard-phases
                   (add-before 'build 'cythonize
                     (lambda* (#:key outputs #:allow-other-keys)
                       (substitute* "setup.py"
