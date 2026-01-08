@@ -106,6 +106,7 @@
         i2p
         modem-manager-gui
         electrum-ltc
+        c3
         otptool
         ctrtool
         makerom

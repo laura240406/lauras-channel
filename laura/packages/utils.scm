@@ -2456,3 +2456,27 @@ Version 1 of VDR was able to record and play plain old SDTV. The new version 2 c
     (synopsis "Electrum-LTC Litecoin wallet")
     (description "Electrum-LTC - Lightweight Litecoin client")
     (license license:expat)))
+
+(define-public c3
+  (package
+    (name "c3")
+    (version "0.7.8")
+    (source
+      (origin
+        (method git-fetch)
+        (uri (git-reference
+              (url "https://github.com/c3lang/c3c.git")
+              (commit "v0.7.8")))
+        (file-name (git-file-name name version))
+        (sha256 (base32 "1bbi404dci6yr3zdjds3mfr62kpbd893pvnf6z8p8rikyzi9jxvk"))))
+    (build-system cmake-build-system)
+    (inputs (list llvm-21 lld-21))
+    (arguments (list #:configure-flags #~(list (string-append "-DC3_LLD_DIR=" #$lld-21 "/lib"))
+                     #:build-type "Release"
+                     #:tests? #f))
+    (home-page "https://c3-lang.org/")
+    (synopsis "Compiler for the C3 language")
+    (description "C3 is a programming language that builds on the syntax and semantics of the C language, with the goal of evolving it while still retaining familiarity for C programmers.
+
+It's an evolution, not a revolution: the C-like for programmers who like C.")
+    (license (list license:lgpl3 license:expat))))
