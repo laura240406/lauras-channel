@@ -18,7 +18,6 @@
              (laura packages 3ds)
              (laura packages ai)
              (laura packages binary)
-             (laura packages radicle)
              (laura packages sudo-rs))
 
 (define to-test
@@ -111,7 +110,6 @@
         ctrtool
         makerom
         ollama
-        radicle
         sudo-rs))
 
 (use-modules (guix)

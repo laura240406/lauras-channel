@@ -2,7 +2,7 @@
   #:use-module (guix gexp)
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
-  #:use-module (laura packages radicle))
+  #:use-module (gnu packages rust-apps))
 
 (define (home-radicle-shepherd-service config)
   (list (shepherd-service (provision '(radicle))
