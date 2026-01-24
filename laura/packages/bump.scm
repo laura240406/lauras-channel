@@ -810,3 +810,61 @@ data types.")
     (properties '((cpe-name . "python")
                   (cpe-vendor . "python")))
     (license license:psfl)))
+
+(define-public gcab-introspection
+  (package
+    (name "gcab")
+    (version "1.6")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnome/sources/gcab/"
+                                  version "/gcab-" version ".tar.xz"))
+              (sha256
+               (base32
+                "02sngv40zwadajsiav1paahyfgkccbh9s7r5ks82chbwawarc31g"))))
+    (build-system meson-build-system)
+    (native-inputs
+     (list `(,glib "bin")               ; for glib-mkenums
+           intltool
+           pkg-config
+           vala))
+    (inputs
+     (list glib zlib gobject-introspection))
+    (arguments
+     `(#:configure-flags
+       ;; XXX This ‘documentation’ is for developers, and fails informatively:
+       ;; Error in gtkdoc helper script: 'gtkdoc-mkhtml' failed with status 5
+       (list "-Ddocs=false"
+             "-Dintrospection=true")))
+    (home-page "https://wiki.gnome.org/msitools") ; no dedicated home page
+    (synopsis "Microsoft Cabinet file manipulation library")
+    (description
+     "The libgcab library provides GObject functions to read, write, and modify
+Microsoft cabinet (.@dfn{CAB}) files.")
+    (license (list license:gpl2+        ; tests/testsuite.at
+                   license:lgpl2.1+)))) ; the rest
+
+(define-public msitools
+  (package
+    (name "msitools")
+    (version "0.106")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://gnome/sources/msitools/"
+                                  version "/msitools-" version ".tar.xz"))
+              (sha256
+               (base32
+                "16v5b8pgm7g5f35ff4lr10m4j9a18x4yc44g3d7z3040rxwl5lqy"))))
+    (build-system meson-build-system)
+    (native-inputs
+     (list bison pkg-config vala perl `(,glib "bin")))
+    (inputs
+     (list gcab-introspection glib libgsf libxml2 gobject-introspection
+           `(,util-linux "lib")))
+    (home-page "https://wiki.gnome.org/msitools")
+    (synopsis "Windows Installer file manipulation tool")
+    (description
+     "msitools is a collection of command-line tools to inspect, extract, build,
+and sign Windows@tie{}Installer (.@dfn{MSI}) files.  It aims to be a solution
+for packaging and deployment of cross-compiled Windows applications.")
+    (license license:lgpl2.1+)))

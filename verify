@@ -31,6 +31,7 @@
         ffmpeg-7.1.1
         p7zip-nonfree
         python-latest
+        msitools
         drand-rs
         minecraft-launcher
         ScuffedMinecraft
