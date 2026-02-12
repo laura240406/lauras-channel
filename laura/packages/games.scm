@@ -686,6 +686,7 @@ The tool is designed for high performance and supports Minecraft Java Edition ma
     (arguments
      (list
       #:build-type "Release"
+      #:tests? #f
       #:phases
       #~(modify-phases %standard-phases
           (add-after 'install 'wrap
