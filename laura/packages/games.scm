@@ -68,6 +68,9 @@
   #:use-module (gnu packages java)
   #:use-module (gnu packages man)
   #:use-module (gnu packages kde-frameworks)
+  #:use-module (gnu packages markup)
+  #:use-module (gnu packages aidc)
+  #:use-module (gnu packages backup)
   #:use-module (guix build-system qt)
   #:use-module (nonguix licenses)
   #:use-module (nonguix build-system binary)
@@ -660,17 +663,19 @@ The tool is designed for high performance and supports Minecraft Java Edition ma
 (define-public prismlauncher
   (package
     (name "prismlauncher")
-    (version "9.4")
+    (version "11.0.0")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/PrismLauncher/PrismLauncher")
              (recursive? #t)
-             (commit "9.4")))
+             (commit version)))
        (file-name (git-file-name name version))
+       (modules '((guix build utils)))
+       (snippet #~(substitute* "launcher/CMakeLists.txt" (("-Wall -Wextra -Wpedantic -Werror") "-Wall -Wextra -Wpedantic")))
        (sha256
-        (base32 "1xxgyx0z5r3hk3yk4gglbfwvq2qk1j9a0dkrv55j4vrlkni79nrm"))))
+        (base32 "0bms11fz4lfby5hyrs0kn0vl07mkidvbnwvfiqrwqnil540v05rc"))))
     (build-system qt-build-system)
     (native-inputs (list pkg-config
                          (list openjdk17 "jdk") scdoc extra-cmake-modules))
@@ -680,6 +685,12 @@ The tool is designed for high performance and supports Minecraft Java Edition ma
                   glfw-3.4
                   mesa
                   openal
+                  openjdk25
+                  cmark
+                  gamemode
+                  qrencode
+                  tomlplusplus
+                  libarchive
                   libxcursor
                   libxrandr
                   libxxf86vm))
