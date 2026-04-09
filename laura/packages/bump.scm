@@ -8,6 +8,7 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system qt)
+  #:use-module (guix build-system copy)
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix platform)
@@ -511,28 +512,79 @@ convert and stream audio and video.  It includes the libavcodec
 audio/video codec library.")
     (license license:gpl2+)))
 
-(define-public p7zip-nonfree
-  (package/inherit p7zip
-    (name "p7zip-nonfree")
-    (version "16.02")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append "mirror://sourceforge/" name "/" name "/"
-                                  version "/p7zip_" version
-                                  "_src_all.tar.bz2"))
-              (sha256
-               (base32
-                "07rlwbbgszq8i7m8jh3x6j2w2hc9a72dc7fmqawnqkwlwb00mcjy"))
-              (modules '((guix build utils)))
-              (snippet
-               '(begin
-                  ;; Fix FTBFS with gcc-10.
-                  (substitute* "CPP/Windows/ErrorMsg.cpp"
-                    (("switch\\(errorCode\\) \\{")
-                     "switch(static_cast<HRESULT>(errorCode)) {"))))
-              (patches (search-patches "p7zip-CVE-2016-9296.patch"
-                                       "p7zip-CVE-2017-17969.patch"
-                                       "p7zip-fix-build-with-gcc-11.patch"))))))
+
+(define-public 7zip-nonfree
+  (package
+    (name "7zip-nonfree")
+    (version "26.00")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+              (url "https://github.com/ip7z/7zip")
+              (commit version)))
+       (sha256
+        (base32 "1fvgl9qp2pl5c0jmvgbdx6qig3qd80mhxvml42yby8y412x65sh7"))
+       (file-name (git-file-name name version))
+       (modules '((guix build utils)
+                  (ice-9 regex)))))
+    (build-system copy-build-system)
+    (arguments
+     (list
+      #:install-plan
+      #~'(("DOC/" "share/doc/7zip")
+          ("CPP/7zip/UI/Console/_o/7z" "bin/")
+          ("CPP/7zip/Bundles/Format7zF/_o/7z.so" "lib/")
+          ("CPP/7zip/Bundles/SFXCon/_o/7zCon" "lib/7zCon.sfx"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (delete 'check)
+          (add-after 'unpack 'patch-sources
+            (lambda* (#:key outputs #:allow-other-keys)
+              (let* ((out (assoc-ref outputs "out"))
+                     (lib (string-append out "/lib")))
+                (substitute* "CPP/7zip/UI/Client7z/Client7z.cpp"
+                  (("if \\(!lib\\.Load\\(dllPrefix + FTEXT\\(kDllName\\)\\)\\)")
+                   (string-append "if (!lib.Load(FTEXT(\"" lib
+                                  "\") + FTEXT(kDllName)) || "
+                                  "!lib.Load(dllPrefix + FTEXT(kDllName)))")))
+                (substitute* "CPP/7zip/UI/Common/ArchiveCommandLine.cpp"
+                  (("s = FTEXT\\(\"\\.\"\\)")
+                   (string-append "s = FTEXT(\"" lib "\")"))
+                  (("s = fas2fs\\(g_ModuleDirPrefix\\)")
+                   (string-append "s = FTEXT(\"" lib "\") "
+                                  "FSTRING_PATH_SEPARATOR"))))))
+          (add-before 'install 'build
+            (lambda* _
+              (define make-flags
+                '#$(list "DISABLE_RAR=1"
+                         (string-append "CC=" (cc-for-target))
+                         (string-append "CXX=" (cxx-for-target))
+                         (string-append "PLATFORM="
+                                        (cond
+                                         ((target-x86-64?) "x64")
+                                         ((target-x86-32?) "x86")
+                                         ((target-arm32?) "arm")
+                                         ((target-aarch64?) "arm64")
+                                         (#t "")))))
+              (with-directory-excursion "CPP/7zip/"
+                (for-each
+                 (lambda (dir)
+                   (with-directory-excursion dir
+                     (apply invoke "make" "-f" "makefile.gcc" make-flags)))
+                 '("UI/Console"
+                   "Bundles/Format7zF"
+                   "Bundles/SFXCon"))))))))
+    (home-page "https://7-zip.org")
+    (synopsis "7-zip file archiver")
+    (description
+     "7-zip is a command-line file compressor that supports a number
+of archive formats and features self-extracting archives.")
+    (license (list license:lgpl2.1+
+                   license:bsd-2
+                   license:bsd-3
+                   license:public-domain))))
 
 (define-public python-latest
   (package
