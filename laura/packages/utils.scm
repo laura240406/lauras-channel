@@ -291,49 +291,6 @@
      "Cado-NFS, An Implementation of the Number Field Sieve Algorithm")
     (license license:lgpl2.1)))
 
-(define-public cerca
-  (package
-    (name "cerca")
-    (version "0.0.0-20240906135835-1f4d8ff974ed")
-    (source
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/cblgh/cerca")
-             (commit (go-version->git-ref version))))
-       (file-name (git-file-name name version))
-       (sha256
-        (base32 "17wsk87p1v5wsxdfypc293nrsdx4nna2q9ldwf89r6bia3978gsi"))))
-    (build-system go-build-system)
-    (arguments
-     `(#:import-path "cerca"
-       #:go ,go-1.23
-       #:build-flags (list "-ldflags=-s -w --buildid=none")
-       #:phases (modify-phases %standard-phases
-                  (add-before 'build 'deref-symlinks
-                    (lambda* (#:key inputs #:allow-other-keys)
-                      (begin
-                        (delete-file-recursively
-                         "src/golang.org/x/net/publicsuffix/data")
-                        (copy-recursively (string-append (assoc-ref inputs
-                                                          "go-golang-org-x-net")
-                                           "/src/golang.org/x/net/publicsuffix/data")
-                         "src/golang.org/x/net/publicsuffix/data")))))))
-    (propagated-inputs (list go-golang-org-x-time
-                             go-golang-org-x-exp
-                             go-github-com-microcosm-cc-bluemonday
-                             go-github-com-mattn-go-sqlite3
-                             go-github-com-matthewhartstonge-argon2
-                             go-github-com-komkom-toml
-                             go-github-com-gorilla-sessions
-                             go-github-com-gomarkdown-markdown
-                             go-github-com-cblgh-plain
-                             go-github-com-carlmjohnson-requests))
-    (home-page "https://github.com/cblgh/cerca")
-    (synopsis "Cerca")
-    (description "a forum software")
-    (license license:agpl3+)))
-
 (define-public clipmon
   (package
     (name "clipmon")
