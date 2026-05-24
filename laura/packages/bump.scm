@@ -275,15 +275,15 @@ automatic, safe and reliable.  It is used by tools such as GNOME Software. Now w
 (define-public libvvenc
   (package
     (name "libvvenc")
-    (version "1.13.1")
+    (version "1.14.0")
     (source
       (origin
         (method git-fetch)
         (uri (git-reference
               (url "https://github.com/fraunhoferhhi/vvenc")
-              (commit "v1.13.1")))
+              (commit "v1.14.0")))
         (file-name (git-file-name name version))
-        (sha256 (base32 "045f917yzi67c8mcla0ak9ky3966dm21q4z84d53hkhqclg7bx0c"))))
+        (sha256 (base32 "1yw2khq0hn78k9y9y6g466m6gs9c3hxn9hpdfmx9swg98p2mg59i"))))
     (build-system cmake-build-system)
     (arguments (list #:tests? #f #:build-type "Release" #:configure-flags #~(list "-DBUILD_SHARED_LIBS=ON" "-DVVENC_LIBRARY_ONLY=ON")))
     (home-page "https://www.hhi.fraunhofer.de/en/departments/vca/technologies-and-solutions/h266-vvc.html")
@@ -291,17 +291,17 @@ automatic, safe and reliable.  It is used by tools such as GNOME Software. Now w
     (description "VVenC, the Fraunhofer Versatile Video Encoder, is a fast and efficient software H.266/VVC encoder implementation.")
     (license license:bsd-3)))
 
-(define-public ffmpeg-7.1.1
+(define-public ffmpeg-next
   (package
-    (name "ffmpeg")
-    (version "7.1.1")
+    (name "ffmpeg-next")
+    (version "8.0.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://ffmpeg.org/releases/ffmpeg-"
                                   version ".tar.xz"))
               (sha256
                (base32
-                "1c837agaw8ljhjx6ndp2w7hffi2mkb22vnmb8v0fbfqdbqwq8fbk"))))
+                "0haskqi8gx4l6zzf8wigfl59x41fh2b4nrfznjyw0icv241hpvh5"))))
     (outputs '("out" "debug"))
     (build-system gnu-build-system)
     (inputs
@@ -337,7 +337,7 @@ automatic, safe and reliable.  It is used by tools such as GNOME Software. Now w
             soxr
             speex
             srt
-            svt-av1
+            svt-av1-3
             twolame
             vidstab
             x265
@@ -346,6 +346,7 @@ automatic, safe and reliable.  It is used by tools such as GNOME Software. Now w
     (native-inputs
      (list bc
            perl
+           nasm
            pkg-config
            texinfo
            speex

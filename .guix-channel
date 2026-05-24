@@ -8,7 +8,4 @@
     (branch "trunk"))
   (channel
    (name nonguix)
-   (url "https://gitlab.com/nonguix/nonguix"))
-  (channel
-    (name guix-science)
-    (url "https://codeberg.org/guix-science/guix-science.git"))))
+   (url "https://gitlab.com/nonguix/nonguix"))))
