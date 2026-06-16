@@ -1640,55 +1640,6 @@ Card)))} • @@url{#readme-Changelog,View Changelog} •
      "DSVPN is a Dead Simple VPN, designed to address the most common use case for using a VPN.")
     (license license:expat)))
 
-(define openssl-with-compression
-  (package/inherit openssl
-    (inputs (list zlib))
-    (arguments (substitute-keyword-arguments (package-arguments openssl)
-                 ((#:phases phases
-                   '%standard-phases)
-                  #~(modify-phases #$phases
-                      (replace 'configure
-                        (lambda* (#:key configure-flags #:allow-other-keys)
-                          ;; It's not a shebang so patch-source-shebangs misses it.
-                          (substitute* "config"
-                            (("/usr/bin/env")
-                             (which "env")))
-                          (apply invoke
-                                 #$@(if (%current-target-system)
-                                        #~("./Configure")
-                                        #~("./config"))
-                                 "shared" ;build shared libraries
-                                 "--libdir=lib"
-
-                                 ;; The default for this catch-all directory is
-                                 ;; PREFIX/ssl.  Change that to something more
-                                 ;; conventional.
-                                 (string-append "--openssldir="
-                                                #$output "/share/openssl-"
-                                                #$(package-version
-                                                   this-package))
-
-                                 (string-append "--prefix="
-                                                #$output)
-                                 (string-append "-Wl,-rpath,"
-                                                (string-append #$output "/lib"))
-                                 "enable-weak-ssl-ciphers"
-                                 "zlib"
-                                 #$@(if (%current-target-system)
-                                        #~((getenv "CONFIGURE_TARGET_ARCH"))
-                                        #~())
-                                 configure-flags)
-                          ;; Output the configure variables.
-                          (invoke "perl" "configdata.pm" "--dump")))
-                      (replace 'remove-miscellany
-                        (lambda _
-                          ;; The 'misc' directory contains random undocumented shell and
-                          ;; Perl scripts.  Remove them to avoid retaining a reference on
-                          ;; Perl.
-                          (delete-file-recursively (string-append #$output
-                                                    "/share/openssl-"
-                                                    #$(package-version
-                                                       this-package) "/misc"))))))))))
 
 (define-public sslscan
   (package
@@ -1704,7 +1655,7 @@ Card)))} • @@url{#readme-Changelog,View Changelog} •
        (sha256
         (base32 "0bkvv5w5qi2yqxxrdpd0nzgz3wdl6b0xq6md4pzl8zkf3g016njw"))))
     (build-system gnu-build-system)
-    (inputs (list openssl-with-compression))
+    (inputs (list openssl))
     (arguments
      (list
       #:tests? #f
